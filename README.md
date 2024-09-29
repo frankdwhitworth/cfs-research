@@ -11,7 +11,7 @@ The cFS Framework is a core subset of cFS, with an extensive ecosystem of applic
 
 ## Distributions
 
-This is the open-source version of cFS, released under an Apache 2.0 license. The open source cFS is limited to the framework and common apps, libraries, and tools, which includes and is limited to: cFE, OSAL, PSP, Command Ingest (Lab), Telemetry Output (Lab), Scheduler (Lab), Sample App, Sample Lib, Data Storage, File Manager, HouseKeeping, Health and Safety, Memory Dwell, CFDP File Transfer, CheckSum, Limit Checker, Memory Manager, Stored Command, cFS Ground System, elf2cfetbl, and tblCRCTool. Changes to the open repositories are limited to bug fixes and minor enhancements to those components.
+This is the open-source version of cFS, released under an Apache 2.0 license. The open source cFS is limited to the framework and common apps, libraries, and tools, which includes and is limited to: cFE, OSAL, PSP, Command Ingest (Lab), Telemetry Output (Lab), Scheduler (Lab), Blinker App, Sample Lib, Data Storage, File Manager, HouseKeeping, Health and Safety, Memory Dwell, CFDP File Transfer, CheckSum, Limit Checker, Memory Manager, Stored Command, cFS Ground System, elf2cfetbl, and tblCRCTool. Changes to the open repositories are limited to bug fixes and minor enhancements to those components.
 
 A Government-use (Distro C) version of cFS with features for a full flight mission is available through a Software User Agreement. For more information about government version features or to explore partnerships, please [contact the cFS team](<mailto:cfs-program@lists.nasa.gov>).
 
@@ -173,7 +173,7 @@ Should see telemetry, can send noops and see command counters increment.
 
 ### Adding Custom Apps
 
-See the [cFE Application Developer's Guide](https://github.com/nasa/cFE/blob/main/docs/cFE%20Application%20Developers%20Guide.md) for information about creating new apps. It is encouraged to use sample_app or skeleton_app as a starting point. Once the application has been created, it must be added to targets.cmake to be compiled and to the .scr file to be dynamically loaded at runtime (in a dynamically loaded environment).
+See the [cFE Application Developer's Guide](https://github.com/nasa/cFE/blob/main/docs/cFE%20Application%20Developers%20Guide.md) for information about creating new apps. It is encouraged to use blinker_app or skeleton_app as a starting point. Once the application has been created, it must be added to targets.cmake to be compiled and to the .scr file to be dynamically loaded at runtime (in a dynamically loaded environment).
 
 ## Related Capability
 

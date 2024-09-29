@@ -124,7 +124,7 @@ For issues related to continuous testing workflows or multi-component "epics" st
 #### <a name='LabApps'></a>Lab Apps 
 
 - [ci\_lab](https://github.com/nasa/ci_lab/issues)
-- [sample\_app](https://github.com/nasa/sample_app/issues)
+- [sample\_app](https://github.com/nasa/blinker_app/issues)
 - [sample\_lib](https://github.com/nasa/sample_lib/issues)
 - [sch\_lab](https://github.com/nasa/sch_lab/issues)
 - [to\_lab](https://github.com/nasa/to_lab/issues)

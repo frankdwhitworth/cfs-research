@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "blinker_app_cmds.h": "c",
+        "blinker_app_version.h": "c",
+        "blinker_app_coveragetest_common.h": "c"
+    }
+}
