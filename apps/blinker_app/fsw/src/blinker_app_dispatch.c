@@ -66,6 +66,17 @@ bool BLINKER_APP_VerifyCmdLength(const CFE_MSG_Message_t *MsgPtr, size_t Expecte
     return result;
 }
 
+void BLINKER_APP_Blink(void)
+{
+    for (int i = 0; i < BLINKER_APP_TOTAL_BLINKERS; ++i)
+    {
+        if (BLINKER_APP_Data.BlinkerStatuses[i])
+        {
+            BLINKER_APP_Data.BlinkerCounts[i]++;
+        }
+    }
+}
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
 /*                                                                            */
 /* BLINKER ground commands                                                     */
@@ -75,7 +86,7 @@ void BLINKER_APP_ProcessGroundCommand(const CFE_SB_Buffer_t *SBBufPtr)
 {
     CFE_MSG_FcnCode_t CommandCode = 0;
 
-    CFE_MSG_GetFcnCode(&SBBufPtr->Msg, &CommandCode);
+    CFE_MSG_GetFcnCode((const CFE_MSG_Message_t *)SBBufPtr, &CommandCode);
 
     /*
     ** Process BLINKER app ground commands
@@ -83,30 +94,86 @@ void BLINKER_APP_ProcessGroundCommand(const CFE_SB_Buffer_t *SBBufPtr)
     switch (CommandCode)
     {
         case BLINKER_APP_NOOP_CC:
-            if (BLINKER_APP_VerifyCmdLength(&SBBufPtr->Msg, sizeof(BLINKER_APP_NoopCmd_t)))
+            if (BLINKER_APP_VerifyCmdLength((const CFE_MSG_Message_t *)SBBufPtr, sizeof(BLINKER_APP_NoopCmd_t)))
             {
                 BLINKER_APP_NoopCmd((const BLINKER_APP_NoopCmd_t *)SBBufPtr);
             }
             break;
 
         case BLINKER_APP_RESET_COUNTERS_CC:
-            if (BLINKER_APP_VerifyCmdLength(&SBBufPtr->Msg, sizeof(BLINKER_APP_ResetCountersCmd_t)))
+            if (BLINKER_APP_VerifyCmdLength((const CFE_MSG_Message_t *)SBBufPtr, sizeof(BLINKER_APP_ResetCountersCmd_t)))
             {
                 BLINKER_APP_ResetCountersCmd((const BLINKER_APP_ResetCountersCmd_t *)SBBufPtr);
             }
             break;
 
         case BLINKER_APP_PROCESS_CC:
-            if (BLINKER_APP_VerifyCmdLength(&SBBufPtr->Msg, sizeof(BLINKER_APP_ProcessCmd_t)))
+            if (BLINKER_APP_VerifyCmdLength((const CFE_MSG_Message_t *)SBBufPtr, sizeof(BLINKER_APP_ProcessCmd_t)))
             {
                 BLINKER_APP_ProcessCmd((const BLINKER_APP_ProcessCmd_t *)SBBufPtr);
             }
             break;
 
         case BLINKER_APP_DISPLAY_PARAM_CC:
-            if (BLINKER_APP_VerifyCmdLength(&SBBufPtr->Msg, sizeof(BLINKER_APP_DisplayParamCmd_t)))
+            if (BLINKER_APP_VerifyCmdLength((const CFE_MSG_Message_t *)SBBufPtr, sizeof(BLINKER_APP_DisplayParamCmd_t)))
             {
                 BLINKER_APP_DisplayParamCmd((const BLINKER_APP_DisplayParamCmd_t *)SBBufPtr);
+            }
+            break;
+
+        case BLINKER_APP_RESET_ALL_BLINKERS_CC:
+            if (BLINKER_APP_VerifyCmdLength((const CFE_MSG_Message_t *)SBBufPtr, sizeof(BLINKER_APP_ResetAllBlinkersCmd_t)))
+            {
+                BLINKER_APP_ResetAllBlinkersCmd((const BLINKER_APP_ResetAllBlinkersCmd_t *)SBBufPtr);
+            }
+            break;
+        
+        case BLINKER_APP_ENABLE_ALL_BLINKERS_CC:
+            if (BLINKER_APP_VerifyCmdLength((const CFE_MSG_Message_t *)SBBufPtr, sizeof(BLINKER_APP_EnableAllBlinkersCmd_t)))
+            {
+                BLINKER_APP_EnableAllBlinkersCmd((const BLINKER_APP_EnableAllBlinkersCmd_t *)SBBufPtr);
+            }
+            break;
+        
+        case BLINKER_APP_DISABLE_ALL_BLINKERS_CC:
+            if (BLINKER_APP_VerifyCmdLength((const CFE_MSG_Message_t *)SBBufPtr, sizeof(BLINKER_APP_DisableAllBlinkersCmd_t)))
+            {
+                BLINKER_APP_DisableAllBlinkersCmd((const BLINKER_APP_DisableAllBlinkersCmd_t *)SBBufPtr);
+            }
+            break;
+
+        case BLINKER_APP_RESET_SPEC_BLINKER_CC:
+            if (BLINKER_APP_VerifyCmdLength((const CFE_MSG_Message_t *)SBBufPtr, sizeof(BLINKER_APP_ResetSpecBlinkersCmd_t)))
+            {
+                BLINKER_APP_ResetSpecBlinkersCmd((const BLINKER_APP_ResetSpecBlinkersCmd_t *)SBBufPtr);
+            }
+            break;
+        
+        case BLINKER_APP_REPORT_SPEC_BLINKER_CC:
+            if (BLINKER_APP_VerifyCmdLength((const CFE_MSG_Message_t *)SBBufPtr, sizeof(BLINKER_APP_ReportSpecBlinkersCmd_t)))
+            {
+                BLINKER_APP_ReportSpecBlinkersCmd((const BLINKER_APP_ReportSpecBlinkersCmd_t *)SBBufPtr);
+            }
+            break;
+        
+        case BLINKER_APP_ENABLE_SPEC_BLINKER_CC:
+            if (BLINKER_APP_VerifyCmdLength((const CFE_MSG_Message_t *)SBBufPtr, sizeof(BLINKER_APP_EnableSpecBlinkersCmd_t)))
+            {
+                BLINKER_APP_EnableSpecBlinkersCmd((const BLINKER_APP_EnableSpecBlinkersCmd_t *)SBBufPtr);
+            }
+            break;
+        
+        case BLINKER_APP_DISABLE_SPEC_BLINKER_CC:
+            if (BLINKER_APP_VerifyCmdLength((const CFE_MSG_Message_t *)SBBufPtr, sizeof(BLINKER_APP_DisableSpecBlinkersCmd_t)))
+            {
+                BLINKER_APP_DisableSpecBlinkersCmd((const BLINKER_APP_DisableSpecBlinkersCmd_t *)SBBufPtr);
+            }
+            break;
+                
+        case BLINKER_APP_SWAP_TWO_BLINKERS_CC:
+            if (BLINKER_APP_VerifyCmdLength((const CFE_MSG_Message_t *)SBBufPtr, sizeof(BLINKER_APP_SwapBlinkerCountsCmd_t)))
+            {
+                BLINKER_APP_SwapBlinkerCountsCmd((const BLINKER_APP_SwapBlinkerCountsCmd_t *)SBBufPtr);
             }
             break;
 
@@ -129,7 +196,7 @@ void BLINKER_APP_TaskPipe(const CFE_SB_Buffer_t *SBBufPtr)
 {
     CFE_SB_MsgId_t MsgId = CFE_SB_INVALID_MSG_ID;
 
-    CFE_MSG_GetMsgId(&SBBufPtr->Msg, &MsgId);
+    CFE_MSG_GetMsgId((const CFE_MSG_Message_t *)SBBufPtr, &MsgId);
 
     switch (CFE_SB_MsgIdToValue(MsgId))
     {
@@ -139,6 +206,10 @@ void BLINKER_APP_TaskPipe(const CFE_SB_Buffer_t *SBBufPtr)
 
         case BLINKER_APP_SEND_HK_MID:
             BLINKER_APP_SendHkCmd((const BLINKER_APP_SendHkCmd_t *)SBBufPtr);
+            break;
+
+        case BLINKER_APP_BLINK_CMD_MID:
+            BLINKER_APP_Blink();
             break;
 
         default:

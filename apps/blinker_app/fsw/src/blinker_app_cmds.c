@@ -157,3 +157,127 @@ CFE_Status_t BLINKER_APP_DisplayParamCmd(const BLINKER_APP_DisplayParamCmd_t *Ms
 
     return CFE_SUCCESS;
 }
+
+CFE_Status_t BLINKER_APP_ResetAllBlinkersCmd(const BLINKER_APP_ResetAllBlinkersCmd_t *Msg)
+{
+    for (int i = 0; i < BLINKER_APP_TOTAL_BLINKERS-1; ++i)
+    {
+        BLINKER_APP_Data.BlinkerCounts[i] = 0;
+    }
+    
+    CFE_EVS_SendEvent(BLINKER_APP_REPORT_SPEC_BLINKER_INF_EID, CFE_EVS_EventType_INFORMATION,
+                      "BLINKER_APP: All blinkers reset");
+    return CFE_SUCCESS;
+}
+
+CFE_Status_t BLINKER_APP_EnableAllBlinkersCmd(const BLINKER_APP_EnableAllBlinkersCmd_t *Msg)
+{
+    for (int i = 0; i < BLINKER_APP_TOTAL_BLINKERS-1; ++i)
+    {
+        BLINKER_APP_Data.BlinkerStatuses[i] = 1;
+    }
+
+    CFE_EVS_SendEvent(BLINKER_APP_REPORT_SPEC_BLINKER_INF_EID, CFE_EVS_EventType_INFORMATION,
+                      "BLINKER_APP: All blinkers enabled");
+    return CFE_SUCCESS;
+}
+
+CFE_Status_t BLINKER_APP_DisableAllBlinkersCmd(const BLINKER_APP_DisableAllBlinkersCmd_t *Msg)
+{
+    for (int i = 0; i < BLINKER_APP_TOTAL_BLINKERS-1; ++i)
+    {
+        BLINKER_APP_Data.BlinkerStatuses[i] = 0;
+    }
+    
+    CFE_EVS_SendEvent(BLINKER_APP_REPORT_SPEC_BLINKER_INF_EID, CFE_EVS_EventType_INFORMATION,
+                      "BLINKER_APP: All blinkers disabled");
+    return CFE_SUCCESS;
+}
+
+CFE_Status_t BLINKER_APP_ResetSpecBlinkersCmd(const BLINKER_APP_ResetSpecBlinkersCmd_t *Msg)
+{
+    if (Msg->BlinkerNumber > BLINKER_APP_TOTAL_BLINKERS-1)
+    {
+        CFE_EVS_SendEvent(BLINKER_APP_CC_ERR_EID, CFE_EVS_EventType_ERROR,
+                          "BLINKER_APP: User provided Blinker #%d which exceeds the blinkers being tracked (%d)", 
+                          Msg->BlinkerNumber, BLINKER_APP_TOTAL_BLINKERS);
+        return -1;
+    }
+
+    BLINKER_APP_Data.BlinkerCounts[Msg->BlinkerNumber] = 0;
+    CFE_EVS_SendEvent(BLINKER_APP_REPORT_SPEC_BLINKER_INF_EID, CFE_EVS_EventType_INFORMATION,
+                      "BLINKER_APP: Blinker #%d count RESET", Msg->BlinkerNumber);
+    return CFE_SUCCESS;
+}
+
+CFE_Status_t BLINKER_APP_ReportSpecBlinkersCmd(const BLINKER_APP_ReportSpecBlinkersCmd_t *Msg)
+{
+    if (Msg->BlinkerNumber > BLINKER_APP_TOTAL_BLINKERS-1)
+    {
+        CFE_EVS_SendEvent(BLINKER_APP_CC_ERR_EID, CFE_EVS_EventType_ERROR,
+                          "BLINKER_APP: User provided Blinker #%d which exceeds the blinkers being tracked (%d)", 
+                          Msg->BlinkerNumber, BLINKER_APP_TOTAL_BLINKERS);
+        return -1;
+    }
+
+    CFE_EVS_SendEvent(BLINKER_APP_REPORT_SPEC_BLINKER_INF_EID, CFE_EVS_EventType_INFORMATION,
+                      "BLINKER_APP: Blinker #%d = %d counts", 
+                      Msg->BlinkerNumber, BLINKER_APP_Data.BlinkerCounts[Msg->BlinkerNumber]);
+    return CFE_SUCCESS;
+}
+
+CFE_Status_t BLINKER_APP_EnableSpecBlinkersCmd(const BLINKER_APP_EnableSpecBlinkersCmd_t *Msg)
+{
+    if (Msg->BlinkerNumber > BLINKER_APP_TOTAL_BLINKERS-1)
+    {
+        CFE_EVS_SendEvent(BLINKER_APP_CC_ERR_EID, CFE_EVS_EventType_ERROR,
+                          "BLINKER_APP: User provided Blinker #%d which exceeds the blinkers being tracked (%d)", 
+                          Msg->BlinkerNumber, BLINKER_APP_TOTAL_BLINKERS);
+        return -1;
+    }
+
+    BLINKER_APP_Data.BlinkerStatuses[Msg->BlinkerNumber] = 1;
+    CFE_EVS_SendEvent(BLINKER_APP_REPORT_SPEC_BLINKER_INF_EID, CFE_EVS_EventType_INFORMATION,
+                      "BLINKER_APP: Blinker #%d enabled", Msg->BlinkerNumber);
+    return CFE_SUCCESS;
+}
+
+CFE_Status_t BLINKER_APP_DisableSpecBlinkersCmd(const BLINKER_APP_DisableSpecBlinkersCmd_t *Msg)
+{
+    if (Msg->BlinkerNumber > BLINKER_APP_TOTAL_BLINKERS-1)
+    {
+        CFE_EVS_SendEvent(BLINKER_APP_CC_ERR_EID, CFE_EVS_EventType_ERROR,
+                          "BLINKER_APP: User provided Blinker #%d which exceeds the blinkers being tracked (%d)", 
+                          Msg->BlinkerNumber, BLINKER_APP_TOTAL_BLINKERS);
+        return -1;
+    }
+
+    BLINKER_APP_Data.BlinkerStatuses[Msg->BlinkerNumber] = 0;
+    CFE_EVS_SendEvent(BLINKER_APP_REPORT_SPEC_BLINKER_INF_EID, CFE_EVS_EventType_INFORMATION,
+                      "BLINKER_APP: Blinker #%d disabled", Msg->BlinkerNumber);
+    return CFE_SUCCESS;
+}
+
+CFE_Status_t BLINKER_APP_SwapBlinkerCountsCmd(const BLINKER_APP_SwapBlinkerCountsCmd_t *Msg)
+{
+    uint16 tempCount = 0;
+
+    if ((Msg->BlinkerNumber1 > BLINKER_APP_TOTAL_BLINKERS-1) || 
+        (Msg->BlinkerNumber2 > BLINKER_APP_TOTAL_BLINKERS-1))
+    {
+        CFE_EVS_SendEvent(BLINKER_APP_CC_ERR_EID, CFE_EVS_EventType_ERROR,
+                          "BLINKER_APP: User provided Blinkers #%d and #%d which exceeds the blinkers being tracked (%d)", 
+                          Msg->BlinkerNumber1, Msg->BlinkerNumber2, BLINKER_APP_TOTAL_BLINKERS);
+        return -1;
+    }
+    tempCount = BLINKER_APP_Data.BlinkerCounts[Msg->BlinkerNumber1];
+    BLINKER_APP_Data.BlinkerCounts[Msg->BlinkerNumber1] = BLINKER_APP_Data.BlinkerCounts[Msg->BlinkerNumber2];
+    BLINKER_APP_Data.BlinkerCounts[Msg->BlinkerNumber2] = tempCount;
+
+    CFE_EVS_SendEvent(BLINKER_APP_REPORT_SPEC_BLINKER_INF_EID, CFE_EVS_EventType_INFORMATION,
+                      "BLINKER_APP: Blinker #%d and #%d swapped values (%d <-> %d)", 
+                      Msg->BlinkerNumber1, Msg->BlinkerNumber2, 
+                      BLINKER_APP_Data.BlinkerCounts[Msg->BlinkerNumber1],
+                      BLINKER_APP_Data.BlinkerCounts[Msg->BlinkerNumber2]);
+    return CFE_SUCCESS;
+}

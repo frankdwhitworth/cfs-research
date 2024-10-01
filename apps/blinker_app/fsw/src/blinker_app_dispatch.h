@@ -33,6 +33,7 @@
 
 void BLINKER_APP_TaskPipe(const CFE_SB_Buffer_t *SBBufPtr);
 void BLINKER_APP_ProcessGroundCommand(const CFE_SB_Buffer_t *SBBufPtr);
+void BLINKER_APP_Blink(void);
 bool BLINKER_APP_VerifyCmdLength(const CFE_MSG_Message_t *MsgPtr, size_t ExpectedLength);
 
 #endif /* BLINKER_APP_DISPATCH_H */

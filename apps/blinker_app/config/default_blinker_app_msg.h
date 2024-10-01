@@ -32,7 +32,22 @@
 #define BLINKER_APP_MSG_H
 
 #include "blinker_app_mission_cfg.h"
+#include "blinker_app_platform_cfg.h"
 #include "blinker_app_msgdefs.h"
 #include "blinker_app_msgstruct.h"
+
+
+typedef BLINKER_APP_NoArgs_t         BLINKER_APP_NoopCmd_t;
+typedef BLINKER_APP_NoArgs_t         BLINKER_APP_ResetCountersCmd_t;
+typedef BLINKER_APP_NoArgs_t         BLINKER_APP_ProcessCmd_t;
+typedef BLINKER_APP_NoArgs_t         BLINKER_APP_ResetAllBlinkersCmd_t;
+typedef BLINKER_APP_NoArgs_t         BLINKER_APP_EnableAllBlinkersCmd_t;
+typedef BLINKER_APP_NoArgs_t         BLINKER_APP_DisableAllBlinkersCmd_t;
+typedef BLINKER_APP_SpecBlinker_t    BLINKER_APP_ResetSpecBlinkersCmd_t;
+typedef BLINKER_APP_SpecBlinker_t    BLINKER_APP_ReportSpecBlinkersCmd_t;
+typedef BLINKER_APP_SpecBlinker_t    BLINKER_APP_EnableSpecBlinkersCmd_t;
+typedef BLINKER_APP_SpecBlinker_t    BLINKER_APP_DisableSpecBlinkersCmd_t;
+typedef BLINKER_APP_SwapBlinkers_t   BLINKER_APP_SwapBlinkerCountsCmd_t;
+
 
 #endif

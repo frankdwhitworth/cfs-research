@@ -36,16 +36,5 @@ typedef struct BLINKER_APP_DisplayParam_Payload
     char   ValStr[BLINKER_APP_STRING_VAL_LEN]; /**< An example string */
 } BLINKER_APP_DisplayParam_Payload_t;
 
-/*************************************************************************/
-/*
-** Type definition (Blinker App housekeeping)
-*/
-
-typedef struct BLINKER_APP_HkTlm_Payload
-{
-    uint8 CommandErrorCounter;
-    uint8 CommandCounter;
-    uint8 spare[2];
-} BLINKER_APP_HkTlm_Payload_t;
 
 #endif

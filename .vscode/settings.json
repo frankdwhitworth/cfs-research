@@ -2,6 +2,12 @@
     "files.associations": {
         "blinker_app_cmds.h": "c",
         "blinker_app_version.h": "c",
-        "blinker_app_coveragetest_common.h": "c"
+        "blinker_app_coveragetest_common.h": "c",
+        "blinker_app_fcncodes.h": "c",
+        "blinker_app_topicids.h": "c",
+        "blinker_app_platform_cfg.h": "c",
+        "blinker_app_msgstruct.h": "c",
+        "blinker_app_msg.h": "c",
+        "blinker_app_eventids.h": "c"
     }
 }

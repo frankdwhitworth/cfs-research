@@ -38,4 +38,7 @@
 #include "blinker_app_mission_cfg.h"
 #include "blinker_app_internal_cfg.h"
 
+/* Has to be multiple of 4 */
+#define BLINKER_APP_TOTAL_BLINKERS 8
+
 #endif

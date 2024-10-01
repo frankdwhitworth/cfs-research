@@ -181,6 +181,19 @@ CFE_Status_t BLINKER_APP_Init(void)
     if (status == CFE_SUCCESS)
     {
         /*
+        ** Subscribe to ground command packets
+        */
+        status = CFE_SB_Subscribe(CFE_SB_ValueToMsgId(BLINKER_APP_BLINK_CMD_MID), BLINKER_APP_Data.CommandPipe);
+        if (status != CFE_SUCCESS)
+        {
+            CFE_EVS_SendEvent(BLINKER_APP_SUB_CMD_ERR_EID, CFE_EVS_EventType_ERROR,
+                              "Blinker App: Error Subscribing to Commands, RC = 0x%08lX", (unsigned long)status);
+        }
+    }
+
+    if (status == CFE_SUCCESS)
+    {
+        /*
         ** Register Example Table(s)
         */
         status = CFE_TBL_Register(&BLINKER_APP_Data.TblHandles[0], "ExampleTable", sizeof(BLINKER_APP_ExampleTable_t),

@@ -35,5 +35,13 @@ CFE_Status_t BLINKER_APP_ResetCountersCmd(const BLINKER_APP_ResetCountersCmd_t *
 CFE_Status_t BLINKER_APP_ProcessCmd(const BLINKER_APP_ProcessCmd_t *Msg);
 CFE_Status_t BLINKER_APP_NoopCmd(const BLINKER_APP_NoopCmd_t *Msg);
 CFE_Status_t BLINKER_APP_DisplayParamCmd(const BLINKER_APP_DisplayParamCmd_t *Msg);
+CFE_Status_t BLINKER_APP_ResetAllBlinkersCmd(const BLINKER_APP_ResetAllBlinkersCmd_t *Msg);
+CFE_Status_t BLINKER_APP_EnableAllBlinkersCmd(const BLINKER_APP_EnableAllBlinkersCmd_t *Msg);
+CFE_Status_t BLINKER_APP_DisableAllBlinkersCmd(const BLINKER_APP_DisableAllBlinkersCmd_t *Msg);
+CFE_Status_t BLINKER_APP_ResetSpecBlinkersCmd(const BLINKER_APP_ResetSpecBlinkersCmd_t *Msg);
+CFE_Status_t BLINKER_APP_ReportSpecBlinkersCmd(const BLINKER_APP_ReportSpecBlinkersCmd_t *Msg);
+CFE_Status_t BLINKER_APP_EnableSpecBlinkersCmd(const BLINKER_APP_EnableSpecBlinkersCmd_t *Msg);
+CFE_Status_t BLINKER_APP_DisableSpecBlinkersCmd(const BLINKER_APP_DisableSpecBlinkersCmd_t *Msg);
+CFE_Status_t BLINKER_APP_SwapBlinkerCountsCmd(const BLINKER_APP_SwapBlinkerCountsCmd_t *Msg);
 
 #endif /* BLINKER_APP_CMDS_H */

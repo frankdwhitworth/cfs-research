@@ -68,6 +68,9 @@ typedef struct
     */
     CFE_SB_PipeId_t CommandPipe;
 
+    /* Blinker increment data pipe */
+    CFE_SB_PipeId_t BlinkerPipe;
+
     /*
     ** Initialization data (not reported in housekeeping)...
     */
@@ -75,6 +78,9 @@ typedef struct
     uint16 PipeDepth;
 
     CFE_TBL_Handle_t TblHandles[BLINKER_APP_NUMBER_OF_TABLES];
+
+    uint16 BlinkerCounts[BLINKER_APP_TOTAL_BLINKERS];
+    uint8 BlinkerStatuses[BLINKER_APP_TOTAL_BLINKERS];
 } BLINKER_APP_Data_t;
 
 /*
