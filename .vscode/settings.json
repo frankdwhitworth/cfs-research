@@ -8,6 +8,7 @@
         "blinker_app_platform_cfg.h": "c",
         "blinker_app_msgstruct.h": "c",
         "blinker_app_msg.h": "c",
-        "blinker_app_eventids.h": "c"
+        "blinker_app_eventids.h": "c",
+        "tst_csmr_app.h": "c"
     }
 }
