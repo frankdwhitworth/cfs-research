@@ -19,5 +19,6 @@ export HOST_DIR="${CFS_TOPDIR}/build/exe/host"
 
 # Aliases
 alias build-cfs="cd ${CFS_TOPDIR}; make distclean; make SIMULATION=native prep; make; make install"
+alias build-uts="cd ${CFS_TOPDIR}; make distclean; make SIMULATION=native ENABLE_UNIT_TESTS=true prep; make; make install"
 alias run-cfs="cd ${CPU1_DIR}; ./core-cpu1"
 alias repo="cd ${CFS_TOPDIR}"
