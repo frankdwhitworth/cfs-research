@@ -51,6 +51,11 @@
 #define TST_PROD_APP_TABLE_OUT_OF_RANGE_ERR_CODE -1
 
 #define TST_PROD_APP_TBL_ELEMENT_1_MAX 10
+
+#define TST_PROD_APP_DEFAULT_NUM_MSG_PER_TEST 10
+#define TST_START_MSG   0
+#define TST_MIDDLE_MSG  1
+#define TST_END_MSG     2
 /************************************************************************
 ** Type Definitions
 *************************************************************************/
@@ -91,6 +96,7 @@ typedef struct
     
     bool TestInProgress;
     TST_PROD_APP_TestMsg_t TestMsg;
+    uint32 NumMsgsPerTest;
 
     OS_time_t StartTime;
     OS_time_t StopTime;
@@ -114,6 +120,7 @@ int32 TST_PROD_APP_Complete(const TST_PROD_APP_CompleteCmd_t *SBBufPtr);
 int32 TST_PROD_APP_Noop(const TST_PROD_APP_NoopCmd_t *Msg);
 void  TST_PROD_APP_GetCrc(const char *TableName);
 int32 TST_PROD_APP_Start(const TST_PROD_APP_NoopCmd_t *Msg);
+int32 TST_PROD_APP_ChangeNumMsgs(const TST_PROD_APP_NumMessagesCmd_t *Msg);
 
 int32 TST_PROD_APP_TblValidationFunc(void *TblData);
 

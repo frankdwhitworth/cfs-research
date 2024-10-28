@@ -42,6 +42,12 @@ typedef struct
     CFE_MSG_CommandHeader_t CmdHeader; /**< \brief Command header */
 } TST_CSMR_APP_NoArgsCmd_t;
 
+typedef struct
+{
+    CFE_MSG_CommandHeader_t CmdHeader;
+    uint8 Payload;
+} TST_PROD_APP_TestMsg_t;
+
 /*
 ** The following commands all share the "NoArgs" format
 **

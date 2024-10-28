@@ -224,6 +224,27 @@ void TST_CSMR_APP_SendCompleteCmd(void)
     CFE_EVS_SendEvent(TST_CSMR_APP_SENT_COMPLETE_INF_EID, CFE_EVS_EventType_INFORMATION, "Sending test complete");
 }
 
+void TST_CSMR_APP_ProcessTestMID(TST_PROD_APP_TestMsg_t *Msg)
+{
+    // CFE_EVS_SendEvent(TST_CSMR_APP_RCVD_TST_MID_INF_EID, CFE_EVS_EventType_INFORMATION, "Received test MID (%d)", Msg->Payload);
+
+    switch(Msg->Payload)
+    {
+        case TST_START_MSG:
+            TST_CSMR_APP_Data.TestInProgress = 1;
+            break;
+        case TST_MIDDLE_MSG:
+            break;
+        case TST_END_MSG:
+            TST_CSMR_APP_SendCompleteCmd();
+            TST_CSMR_APP_Data.TestInProgress = 0;
+            break;
+        default:
+            CFE_EVS_SendEvent(TST_CSMR_APP_BAD_TEST_MSG_ERR_EID, CFE_EVS_EventType_ERROR,
+                              "TST_CSMR_APP: invalid test message with bad payload rcvd");
+    }
+}
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
 /*                                                                            */
 /*  Purpose:                                                                  */
@@ -248,8 +269,7 @@ void TST_CSMR_APP_ProcessCommandPacket(CFE_SB_Buffer_t *SBBufPtr)
             break;
 
         case TST_TRAFFIC_0001_MID:
-            CFE_EVS_SendEvent(TST_CSMR_APP_RCVD_TST_MID_INF_EID, CFE_EVS_EventType_INFORMATION, "Received test MID");
-            TST_CSMR_APP_SendCompleteCmd();
+            TST_CSMR_APP_ProcessTestMID((TST_PROD_APP_TestMsg_t *)SBBufPtr);
             break;
 
         default:

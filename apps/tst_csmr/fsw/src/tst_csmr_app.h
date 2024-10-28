@@ -41,7 +41,7 @@
 #include "tst_params.h"
 
 /***********************************************************************/
-#define TST_CSMR_APP_PIPE_DEPTH 32 /* Depth of the Command Pipe for Application */
+#define TST_CSMR_APP_PIPE_DEPTH 1000 /* Depth of the Command Pipe for Application */
 
 #define TST_CSMR_APP_NUMBER_OF_TABLES 1 /* Number of Table(s) */
 
@@ -51,6 +51,10 @@
 #define TST_CSMR_APP_TABLE_OUT_OF_RANGE_ERR_CODE -1
 
 #define TST_CSMR_APP_TBL_ELEMENT_1_MAX 10
+
+#define TST_START_MSG   0
+#define TST_MIDDLE_MSG  1
+#define TST_END_MSG     2
 /************************************************************************
 ** Type Definitions
 *************************************************************************/
@@ -110,6 +114,7 @@ int32 TST_CSMR_APP_ResetCounters(const TST_CSMR_APP_ResetCountersCmd_t *Msg);
 int32 TST_CSMR_APP_Process(const TST_CSMR_APP_ProcessCmd_t *Msg);
 int32 TST_CSMR_APP_Noop(const TST_CSMR_APP_NoopCmd_t *Msg);
 void  TST_CSMR_APP_GetCrc(const char *TableName);
+void TST_CSMR_APP_ProcessTestMID(TST_PROD_APP_TestMsg_t *Msg);
 
 int32 TST_CSMR_APP_TblValidationFunc(void *TblData);
 

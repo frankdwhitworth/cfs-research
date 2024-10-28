@@ -28,11 +28,12 @@
 /*
 ** TST_PROD_APP command codes
 */
-#define TST_PROD_APP_NOOP_CC           0
-#define TST_PROD_APP_RESET_COUNTERS_CC 1
-#define TST_PROD_APP_PROCESS_CC        2
-#define TST_PROD_APP_START_TEST_CC     3
-#define TST_PROD_APP_COMPLETE_TEST_CC  4
+#define TST_PROD_APP_NOOP_CC            0
+#define TST_PROD_APP_RESET_COUNTERS_CC  1
+#define TST_PROD_APP_PROCESS_CC         2
+#define TST_PROD_APP_START_TEST_CC      3
+#define TST_PROD_APP_COMPLETE_TEST_CC   4
+#define TST_PROD_APP_CHANGE_NUM_MSGS_CC 5
 
 /*************************************************************************/
 
@@ -45,6 +46,21 @@ typedef struct
 } TST_PROD_APP_NoArgsCmd_t;
 
 /*
+** Type definition (uint32 as payload)
+*/
+typedef struct
+{
+    CFE_MSG_CommandHeader_t CmdHeader; /**< \brief Command header */
+    uint32 NumMessages;
+} TST_PROD_APP_NumMessagesCmd_t;
+
+typedef struct
+{
+    CFE_MSG_CommandHeader_t CmdHeader;
+    uint8 Payload;
+} TST_PROD_APP_TestMsg_t;
+
+/*
 ** The following commands all share the "NoArgs" format
 **
 ** They are each given their own type name matching the command name, which
@@ -55,7 +71,6 @@ typedef TST_PROD_APP_NoArgsCmd_t TST_PROD_APP_NoopCmd_t;
 typedef TST_PROD_APP_NoArgsCmd_t TST_PROD_APP_ResetCountersCmd_t;
 typedef TST_PROD_APP_NoArgsCmd_t TST_PROD_APP_ProcessCmd_t;
 typedef TST_PROD_APP_NoArgsCmd_t TST_PROD_APP_StartCmd_t;
-typedef TST_PROD_APP_NoArgsCmd_t TST_PROD_APP_TestMsg_t;
 typedef TST_PROD_APP_NoArgsCmd_t TST_PROD_APP_CompleteCmd_t;
 
 /*************************************************************************/

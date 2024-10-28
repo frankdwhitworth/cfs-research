@@ -120,6 +120,8 @@ int32 TST_PROD_APP_Init(void)
     TST_PROD_APP_Data.CmdCounter = 0;
     TST_PROD_APP_Data.ErrCounter = 0;
 
+    TST_PROD_APP_Data.NumMsgsPerTest = TST_PROD_APP_DEFAULT_NUM_MSG_PER_TEST;
+
     /*
     ** Initialize app configuration data
     */
@@ -143,6 +145,10 @@ int32 TST_PROD_APP_Init(void)
     */
     CFE_MSG_Init(CFE_MSG_PTR(TST_PROD_APP_Data.HkTlm.TelemetryHeader), CFE_SB_ValueToMsgId(TST_PROD_APP_HK_TLM_MID),
                  sizeof(TST_PROD_APP_Data.HkTlm));
+
+
+    CFE_MSG_Init(CFE_MSG_PTR(TST_PROD_APP_Data.TestMsg.CmdHeader), CFE_SB_ValueToMsgId(TST_TRAFFIC_0001_MID), 
+                 sizeof(TST_PROD_APP_Data.TestMsg));
 
     /*
     ** Create Software Bus message pipe.
@@ -282,6 +288,13 @@ void TST_PROD_APP_ProcessGroundCommand(CFE_SB_Buffer_t *SBBufPtr)
             }
             break;
 
+        case TST_PROD_APP_CHANGE_NUM_MSGS_CC:
+            if (TST_PROD_APP_VerifyCmdLength(&SBBufPtr->Msg, sizeof(TST_PROD_APP_NumMessagesCmd_t)))
+            {
+                TST_PROD_APP_ChangeNumMsgs((TST_PROD_APP_NumMessagesCmd_t *)SBBufPtr);
+            }
+            break;
+
         /* default case already found during FC vs length test */
         default:
             CFE_EVS_SendEvent(TST_PROD_APP_COMMAND_ERR_EID, CFE_EVS_EventType_ERROR,
@@ -380,9 +393,19 @@ int32 TST_PROD_APP_Start(const TST_PROD_APP_NoopCmd_t *Msg)
 
     CFE_PSP_GetTime(&TST_PROD_APP_Data.StartTime);
 
-    for (int i = 0; i < numMsgToBeSent; ++i)
-    CFE_MSG_Init(CFE_MSG_PTR(TST_PROD_APP_Data.TestMsg.CmdHeader), CFE_SB_ValueToMsgId(TST_TRAFFIC_0001_MID),
-                 sizeof(TST_PROD_APP_Data.TestMsg));
+    /* First message will have 0 for start */
+    TST_PROD_APP_Data.TestMsg.Payload = TST_START_MSG;
+    for (int i = 0; i < TST_PROD_APP_Data.NumMsgsPerTest-1; ++i)
+    {
+        CFE_SB_TimeStampMsg(CFE_MSG_PTR(TST_PROD_APP_Data.TestMsg.CmdHeader));
+        CFE_SB_TransmitMsg(CFE_MSG_PTR(TST_PROD_APP_Data.TestMsg.CmdHeader), true);
+
+        /* Second message -> Second to last message will have 1 for middle */
+        TST_PROD_APP_Data.TestMsg.Payload = TST_MIDDLE_MSG;
+    }
+    
+    /* Last message will have 2 for end */
+    TST_PROD_APP_Data.TestMsg.Payload = TST_END_MSG;
     CFE_SB_TimeStampMsg(CFE_MSG_PTR(TST_PROD_APP_Data.TestMsg.CmdHeader));
     CFE_SB_TransmitMsg(CFE_MSG_PTR(TST_PROD_APP_Data.TestMsg.CmdHeader), true);
 
@@ -418,6 +441,18 @@ int32 TST_PROD_APP_Complete(const TST_PROD_APP_NoopCmd_t *Msg)
                       "TST_PROD_APP: Test finished! Completed in %d μs\n", (int)TimeTaken);
 
 TST_PROD_APP_Start_Exit_Tag:
+    return CFE_SUCCESS;
+}
+
+int32 TST_PROD_APP_ChangeNumMsgs(const TST_PROD_APP_NumMessagesCmd_t *Msg)
+{
+    /* Producers and consumers running in parallel?? */
+    TST_PROD_APP_Data.CmdCounter++;
+
+    TST_PROD_APP_Data.NumMsgsPerTest = Msg->NumMessages;
+    CFE_EVS_SendEvent(TST_PROD_APP_UPDATE_NUM_MSGS_EID, CFE_EVS_EventType_INFORMATION, 
+                      "TST_PROD_APP: Updating number of messages per test to %d", (int)Msg->NumMessages);
+
     return CFE_SUCCESS;
 }
 

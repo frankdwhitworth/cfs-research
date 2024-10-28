@@ -16,6 +16,7 @@ cp -r cfe/cmake/sample_defs sample_defs > /dev/null 2>&1
 # Variables
 export CPU1_DIR="${CFS_TOPDIR}/build/exe/cpu1"
 export HOST_DIR="${CFS_TOPDIR}/build/exe/host"
+git config --global user.email "frank.d.whitworth.4@gmail.com"
 
 # Aliases
 alias build-cfs="cd ${CFS_TOPDIR}; make distclean; make SIMULATION=native prep; make; make install"
