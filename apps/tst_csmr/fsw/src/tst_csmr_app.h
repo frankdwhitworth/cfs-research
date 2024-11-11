@@ -84,6 +84,7 @@ typedef struct
     ** Operational data (not reported in housekeeping)...
     */
     CFE_SB_PipeId_t CommandPipe;
+    CFE_SB_PipeId_t WakeupPipe;
 
     /*
     ** Initialization data (not reported in housekeeping)...
@@ -94,6 +95,7 @@ typedef struct
     CFE_TBL_Handle_t TblHandles[TST_CSMR_APP_NUMBER_OF_TABLES];
 
     bool TestInProgress;
+    uint32 totMsgCount;
     TST_CSMR_APP_TestMsg_t TestMsg;
 } TST_CSMR_APP_Data_t;
 

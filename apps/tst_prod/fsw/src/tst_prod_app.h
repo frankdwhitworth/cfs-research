@@ -60,6 +60,13 @@
 ** Type Definitions
 *************************************************************************/
 
+typedef struct
+{
+    int32 numMsgs;
+    CFE_TIME_SysTime_t *timePtr;
+    void *nextNode;
+} TST_PROD_LoggingNode_t;
+
 /*
 ** Global Data
 */
@@ -85,6 +92,8 @@ typedef struct
     ** Operational data (not reported in housekeeping)...
     */
     CFE_SB_PipeId_t CommandPipe;
+    CFE_SB_PipeId_t WakeupPipe;
+    CFE_SB_PipeId_t TestPipe;
 
     /*
     ** Initialization data (not reported in housekeeping)...
@@ -96,10 +105,16 @@ typedef struct
     
     bool TestInProgress;
     TST_PROD_APP_TestMsg_t TestMsg;
+    TST_PROD_APP_WakeupMsg_t WakeupMsg;
     uint32 NumMsgsPerTest;
+    uint32 ProcessedTestMsgs;
 
     OS_time_t StartTime;
     OS_time_t StopTime;
+
+    TST_PROD_LoggingNode_t *LogData;
+
+    uint32 totMsgCount;
 } TST_PROD_APP_Data_t;
 
 /****************************************************************************/
@@ -121,6 +136,7 @@ int32 TST_PROD_APP_Noop(const TST_PROD_APP_NoopCmd_t *Msg);
 void  TST_PROD_APP_GetCrc(const char *TableName);
 int32 TST_PROD_APP_Start(const TST_PROD_APP_NoopCmd_t *Msg);
 int32 TST_PROD_APP_ChangeNumMsgs(const TST_PROD_APP_NumMessagesCmd_t *Msg);
+int32 TST_PROD_APP_TestMsg(const TST_PROD_APP_TestCmd_t *SBBufPtr);
 
 int32 TST_PROD_APP_TblValidationFunc(void *TblData);
 

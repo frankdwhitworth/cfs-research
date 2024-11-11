@@ -33,6 +33,9 @@
 /* V1 Telemetry Message IDs must be 0x08xx */
 #define TST_PROD_APP_HK_TLM_MID 0x0890
 
+#define TST_CSMR_WAKEUP_CMD_MID 0x1869
+#define TST_PROD_WAKEUP_CMD_MID 0x1868
+
 /* Test MIDs */
 #define TST_TRAFFIC_0001_MID    0x1812
 #define TST_TRAFFIC_0002_MID    0x1813

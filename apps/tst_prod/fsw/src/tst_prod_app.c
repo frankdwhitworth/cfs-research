@@ -47,6 +47,7 @@ void TST_PROD_APP_Main(void)
 {
     int32            status;
     CFE_SB_Buffer_t *SBBufPtr;
+    CFE_SB_MsgId_t MsgId = CFE_SB_INVALID_MSG_ID;
 
     /*
     ** Create the first Performance Log entry
@@ -73,6 +74,38 @@ void TST_PROD_APP_Main(void)
         ** Performance Log Exit Stamp
         */
         CFE_ES_PerfLogExit(TST_PROD_APP_PERF_ID);
+
+        if (TST_PROD_APP_Data.TestInProgress == 1)
+        {
+            status = CFE_SB_ReceiveBuffer(&SBBufPtr, TST_PROD_APP_Data.WakeupPipe, CFE_SB_PEND_FOREVER);
+
+            while (CFE_SB_ReceiveBuffer(&SBBufPtr, TST_PROD_APP_Data.TestPipe, CFE_SB_POLL) != CFE_SB_NO_MESSAGE)
+            {
+                /*
+                ** Performance Log Entry Stamp
+                */
+                CFE_ES_PerfLogEntry(TST_PROD_APP_PERF_ID);
+
+
+                CFE_MSG_GetMsgId(&SBBufPtr->Msg, &MsgId);
+
+                switch (CFE_SB_MsgIdToValue(MsgId))
+                {
+                    case TST_TRAFFIC_0002_MID:
+                        TST_PROD_APP_TestMsg((TST_PROD_APP_TestCmd_t *)SBBufPtr);
+                        break;
+
+                    case TST_TRAFFIC_0003_MID:
+                        TST_PROD_APP_Complete((TST_PROD_APP_TestCmd_t *)SBBufPtr);
+                        break;
+
+                    default:
+                        CFE_EVS_SendEvent(TST_PROD_APP_INVALID_MSGID_ERR_EID, CFE_EVS_EventType_ERROR,
+                                        "TST_PROD_APP: invalid command packet,MID = 0x%x", (unsigned int)CFE_SB_MsgIdToValue(MsgId));
+                        break;
+                }
+            }
+        }
 
         /* Pend on receipt of command packet */
         status = CFE_SB_ReceiveBuffer(&SBBufPtr, TST_PROD_APP_Data.CommandPipe, CFE_SB_PEND_FOREVER);
@@ -150,6 +183,9 @@ int32 TST_PROD_APP_Init(void)
     CFE_MSG_Init(CFE_MSG_PTR(TST_PROD_APP_Data.TestMsg.CmdHeader), CFE_SB_ValueToMsgId(TST_TRAFFIC_0001_MID), 
                  sizeof(TST_PROD_APP_Data.TestMsg));
 
+    CFE_MSG_Init(CFE_MSG_PTR(TST_PROD_APP_Data.WakeupMsg.CmdHeader), CFE_SB_ValueToMsgId(TST_CSMR_WAKEUP_CMD_MID), 
+                 sizeof(TST_PROD_APP_Data.WakeupMsg));
+
     /*
     ** Create Software Bus message pipe.
     */
@@ -178,6 +214,64 @@ int32 TST_PROD_APP_Init(void)
     {
         CFE_ES_WriteToSysLog("Test Producer App: Error Subscribing to Command, RC = 0x%08lX\n", (unsigned long)status);
 
+        return status;
+    }
+
+
+    strncpy(TST_PROD_APP_Data.PipeName, "TST_PROD_APP_WAKEUP_PIPE", sizeof(TST_PROD_APP_Data.PipeName));
+    TST_PROD_APP_Data.PipeName[sizeof(TST_PROD_APP_Data.PipeName) - 1] = 0;
+
+    /*
+    ** Create Software Bus message pipe.
+    */
+    status = CFE_SB_CreatePipe(&TST_PROD_APP_Data.WakeupPipe, TST_PROD_APP_Data.PipeDepth, TST_PROD_APP_Data.PipeName);
+    if (status != CFE_SUCCESS)
+    {
+        CFE_ES_WriteToSysLog("Test Producer App: Error creating pipe, RC = 0x%08lX\n", (unsigned long)status);
+        return status;
+    }
+
+    /*
+    ** Subscribe to Housekeeping request commands
+    */
+    status = CFE_SB_Subscribe(CFE_SB_ValueToMsgId(TST_PROD_WAKEUP_CMD_MID), TST_PROD_APP_Data.WakeupPipe);
+    if (status != CFE_SUCCESS)
+    {
+        CFE_ES_WriteToSysLog("Test Producer App: Error Subscribing to HK request, RC = 0x%08lX\n", (unsigned long)status);
+        return status;
+    }
+
+
+    strncpy(TST_PROD_APP_Data.PipeName, "TST_PROD_APP_TEST_PIPE", sizeof(TST_PROD_APP_Data.PipeName));
+    TST_PROD_APP_Data.PipeName[sizeof(TST_PROD_APP_Data.PipeName) - 1] = 0;
+
+    /*
+    ** Create Software Bus message pipe.
+    */
+    status = CFE_SB_CreatePipe(&TST_PROD_APP_Data.TestPipe, TST_PROD_APP_Data.PipeDepth, TST_PROD_APP_Data.PipeName);
+    if (status != CFE_SUCCESS)
+    {
+        CFE_ES_WriteToSysLog("Test Producer App: Error creating pipe, RC = 0x%08lX\n", (unsigned long)status);
+        return status;
+    }
+
+    /*
+    ** Subscribe to Housekeeping request commands
+    */
+    status = CFE_SB_Subscribe(CFE_SB_ValueToMsgId(TST_TRAFFIC_0002_MID), TST_PROD_APP_Data.TestPipe);
+    if (status != CFE_SUCCESS)
+    {
+        CFE_ES_WriteToSysLog("Test Producer App: Error Subscribing to HK request, RC = 0x%08lX\n", (unsigned long)status);
+        return status;
+    }
+
+    /*
+    ** Subscribe to Housekeeping request commands
+    */
+    status = CFE_SB_Subscribe(CFE_SB_ValueToMsgId(TST_TRAFFIC_0003_MID), TST_PROD_APP_Data.TestPipe);
+    if (status != CFE_SUCCESS)
+    {
+        CFE_ES_WriteToSysLog("Test Producer App: Error Subscribing to HK request, RC = 0x%08lX\n", (unsigned long)status);
         return status;
     }
 
@@ -288,6 +382,13 @@ void TST_PROD_APP_ProcessGroundCommand(CFE_SB_Buffer_t *SBBufPtr)
             }
             break;
 
+        case TST_PROD_APP_TST_MSG_CC:
+            if (TST_PROD_APP_VerifyCmdLength(&SBBufPtr->Msg, sizeof(TST_PROD_APP_TestCmd_t)))
+            {
+                TST_PROD_APP_TestMsg((TST_PROD_APP_TestCmd_t *)SBBufPtr);
+            }
+            break;
+
         case TST_PROD_APP_CHANGE_NUM_MSGS_CC:
             if (TST_PROD_APP_VerifyCmdLength(&SBBufPtr->Msg, sizeof(TST_PROD_APP_NumMessagesCmd_t)))
             {
@@ -377,6 +478,7 @@ int32 TST_PROD_APP_ResetCounters(const TST_PROD_APP_ResetCountersCmd_t *Msg)
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **/
 int32 TST_PROD_APP_Start(const TST_PROD_APP_NoopCmd_t *Msg)
 {
+    TST_PROD_APP_Data.totMsgCount = 0;
     TST_PROD_APP_Data.CmdCounter++;
     
     if (TST_PROD_APP_Data.TestInProgress == 1)
@@ -387,16 +489,29 @@ int32 TST_PROD_APP_Start(const TST_PROD_APP_NoopCmd_t *Msg)
     }
 
     TST_PROD_APP_Data.TestInProgress = 1;
+    TST_PROD_APP_Data.ProcessedTestMsgs = 0;
 
     CFE_EVS_SendEvent(TST_PROD_APP_START_INF_EID, CFE_EVS_EventType_INFORMATION, 
                       "TST_PROD_APP: Let's start testing!");
 
+    // for (int i = 0; i < 100; ++i)
+    // {
+    //     if (TST_PROD_APP_Data.LogData[i].nextNode == NULL)
+    //     {
+    //         TST_PROD_APP_Data.LogData[i].nextNode = malloc(sizeof(TST_PROD_LoggingNode_t));
+    //         (TST_PROD_LoggingNode_t *)(TST_PROD_APP_Data.LogData[i].nextNode)->timePtr = 
+    //             malloc(sizeof(CFE_TIME_SysTime_t) * TST_PROD_APP_Data.NumMsgsPerTest);
+    //     }
+    // }
     CFE_PSP_GetTime(&TST_PROD_APP_Data.StartTime);
 
     /* First message will have 0 for start */
     TST_PROD_APP_Data.TestMsg.Payload = TST_START_MSG;
     for (int i = 0; i < TST_PROD_APP_Data.NumMsgsPerTest-1; ++i)
     {
+        TST_PROD_APP_Data.totMsgCount++;
+        OS_printf("[PROD] Sent (%d)\n", TST_PROD_APP_Data.totMsgCount);
+        // OS_printf("Sending test message from Producer (#%d)\n", i+1);
         CFE_SB_TimeStampMsg(CFE_MSG_PTR(TST_PROD_APP_Data.TestMsg.CmdHeader));
         CFE_SB_TransmitMsg(CFE_MSG_PTR(TST_PROD_APP_Data.TestMsg.CmdHeader), true);
 
@@ -405,10 +520,16 @@ int32 TST_PROD_APP_Start(const TST_PROD_APP_NoopCmd_t *Msg)
     }
     
     /* Last message will have 2 for end */
+    TST_PROD_APP_Data.totMsgCount++;
     TST_PROD_APP_Data.TestMsg.Payload = TST_END_MSG;
+    OS_printf("[PROD] Sent (%d)\n", TST_PROD_APP_Data.totMsgCount);
+    // OS_printf("Sending test message from Producer (#%d)\n", TST_PROD_APP_Data.NumMsgsPerTest);
     CFE_SB_TimeStampMsg(CFE_MSG_PTR(TST_PROD_APP_Data.TestMsg.CmdHeader));
     CFE_SB_TransmitMsg(CFE_MSG_PTR(TST_PROD_APP_Data.TestMsg.CmdHeader), true);
 
+    OS_printf("[PROD] Sending wakeup MID for Consumer (0x%07X)\n", TST_CSMR_WAKEUP_CMD_MID);
+    CFE_SB_TimeStampMsg(CFE_MSG_PTR(TST_PROD_APP_Data.WakeupMsg.CmdHeader));
+    CFE_SB_TransmitMsg(CFE_MSG_PTR(TST_PROD_APP_Data.WakeupMsg.CmdHeader), true);
 
 TST_PROD_APP_Start_Exit_Tag:
     return CFE_SUCCESS;
@@ -437,15 +558,51 @@ int32 TST_PROD_APP_Complete(const TST_PROD_APP_NoopCmd_t *Msg)
     OS_time_t TestDelta = OS_TimeSubtract(TST_PROD_APP_Data.StopTime, TST_PROD_APP_Data.StartTime);
     int64 TimeTaken = OS_TimeGetTotalMicroseconds(TestDelta);
 
-    CFE_EVS_SendEvent(TST_PROD_APP_COMPLETE_INF_EID, CFE_EVS_EventType_INFORMATION, 
-                      "TST_PROD_APP: Test finished! Completed in %d μs\n", (int)TimeTaken);
+    if (TST_PROD_APP_Data.ProcessedTestMsgs != TST_PROD_APP_Data.NumMsgsPerTest)
+    {
+        CFE_EVS_SendEvent(TST_PROD_APP_COMPLETE_INF_EID, CFE_EVS_EventType_INFORMATION, 
+                          "TST_PROD_APP: Incomplete test finished! Received %d / %d messages in %d μs\n", 
+                          TST_PROD_APP_Data.ProcessedTestMsgs, TST_PROD_APP_Data.NumMsgsPerTest, (int)TimeTaken);
+
+    }
+    else
+    {
+        CFE_EVS_SendEvent(TST_PROD_APP_COMPLETE_INF_EID, CFE_EVS_EventType_INFORMATION, 
+                          "TST_PROD_APP: Test finished! Completed in %d μs\n", (int)TimeTaken);
+    }
 
 TST_PROD_APP_Start_Exit_Tag:
     return CFE_SUCCESS;
 }
 
+int32 TST_PROD_APP_TestMsg(const TST_PROD_APP_TestCmd_t *Msg)
+{
+    // OS_printf("Received test message (%d)\n", TST_PROD_APP_Data.ProcessedTestMsgs);
+    if (TST_PROD_APP_Data.TestInProgress == 0)
+    {
+        OS_printf("NO TEST IN PROGRESS...\n");
+        // CFE_EVS_SendEvent(TST_PROD_APP_TEST_ERR_EID, CFE_EVS_EventType_ERROR, 
+        //                  "TST_PROD_APP: No test running.. that's weird");
+        goto TST_PROD_APP_TestMsg;
+    }
+
+    TST_PROD_APP_Data.ProcessedTestMsgs++;
+    OS_printf("[PROD] Received (%d)\n", TST_PROD_APP_Data.ProcessedTestMsgs);
+
+TST_PROD_APP_TestMsg:
+    return CFE_SUCCESS;
+}
+
 int32 TST_PROD_APP_ChangeNumMsgs(const TST_PROD_APP_NumMessagesCmd_t *Msg)
 {
+
+    if (TST_PROD_APP_Data.TestInProgress != 0)
+    {
+        CFE_EVS_SendEvent(TST_PROD_APP_UPDATE_NUM_MSGS_EID, CFE_EVS_EventType_INFORMATION, 
+                         "TST_PROD_APP: Cannot update number of messages per test while a test is in progress");
+        goto TST_PROD_APP_ChangeNumMsgs_Exit_Tag;
+    }
+
     /* Producers and consumers running in parallel?? */
     TST_PROD_APP_Data.CmdCounter++;
 
@@ -453,6 +610,7 @@ int32 TST_PROD_APP_ChangeNumMsgs(const TST_PROD_APP_NumMessagesCmd_t *Msg)
     CFE_EVS_SendEvent(TST_PROD_APP_UPDATE_NUM_MSGS_EID, CFE_EVS_EventType_INFORMATION, 
                       "TST_PROD_APP: Updating number of messages per test to %d", (int)Msg->NumMessages);
 
+TST_PROD_APP_ChangeNumMsgs_Exit_Tag:
     return CFE_SUCCESS;
 }
 

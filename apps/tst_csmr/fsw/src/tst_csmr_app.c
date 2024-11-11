@@ -75,24 +75,27 @@ void TST_CSMR_APP_Main(void)
         */
         CFE_ES_PerfLogExit(TST_CSMR_APP_PERF_ID);
 
-        /* Pend on receipt of command packet */
-        status = CFE_SB_ReceiveBuffer(&SBBufPtr, TST_CSMR_APP_Data.CommandPipe, CFE_SB_PEND_FOREVER);
+        status = CFE_SB_ReceiveBuffer(&SBBufPtr, TST_CSMR_APP_Data.WakeupPipe, CFE_SB_PEND_FOREVER);
 
-        /*
-        ** Performance Log Entry Stamp
-        */
-        CFE_ES_PerfLogEntry(TST_CSMR_APP_PERF_ID);
-
-        if (status == CFE_SUCCESS)
+        OS_printf("Received Wakeup...\n");
+        while (CFE_SB_ReceiveBuffer(&SBBufPtr, TST_CSMR_APP_Data.CommandPipe, CFE_SB_POLL) != CFE_SB_NO_MESSAGE)
         {
-            TST_CSMR_APP_ProcessCommandPacket(SBBufPtr);
-        }
-        else
-        {
-            CFE_EVS_SendEvent(TST_CSMR_APP_PIPE_ERR_EID, CFE_EVS_EventType_ERROR,
-                              "TST_CSMR_APP: SB Pipe Read Error, App Will Exit");
+            /*
+            ** Performance Log Entry Stamp
+            */
+            CFE_ES_PerfLogEntry(TST_CSMR_APP_PERF_ID);
 
-            TST_CSMR_APP_Data.RunStatus = CFE_ES_RunStatus_APP_ERROR;
+            if (status == CFE_SUCCESS)
+            {
+                TST_CSMR_APP_ProcessCommandPacket(SBBufPtr);
+            }
+            else
+            {
+                CFE_EVS_SendEvent(TST_CSMR_APP_PIPE_ERR_EID, CFE_EVS_EventType_ERROR,
+                                "TST_CSMR_APP: SB Pipe Read Error, App Will Exit");
+
+                TST_CSMR_APP_Data.RunStatus = CFE_ES_RunStatus_APP_ERROR;
+            }
         }
     }
 
@@ -190,6 +193,35 @@ int32 TST_CSMR_APP_Init(void)
         return status;
     }
 
+    /*
+    ** Create Software Bus message pipe for wakeup message (TST_CSMR_WAKEUP_CMD_MID).
+    */
+    /*
+    ** Initialize app configuration data
+    */
+    strncpy(TST_CSMR_APP_Data.PipeName, "TST_CSMR_APP_WAKEUP_PIPE", sizeof(TST_CSMR_APP_Data.PipeName));
+    TST_CSMR_APP_Data.PipeName[sizeof(TST_CSMR_APP_Data.PipeName) - 1] = 0;
+    status = CFE_SB_CreatePipe(&TST_CSMR_APP_Data.WakeupPipe, TST_CSMR_APP_Data.PipeDepth, TST_CSMR_APP_Data.PipeName);
+    if (status != CFE_SUCCESS)
+    {
+        CFE_ES_WriteToSysLog("Test Consumer App: Error creating pipe, RC = 0x%08lX\n", (unsigned long)status);
+        return status;
+    }
+
+    /*
+    ** Subscribe to wakeup mid request commands
+    */
+    status = CFE_SB_Subscribe(CFE_SB_ValueToMsgId(TST_CSMR_WAKEUP_CMD_MID), TST_CSMR_APP_Data.WakeupPipe);
+    if (status != CFE_SUCCESS)
+    {
+        CFE_ES_WriteToSysLog("Test Consumer App: Error Subscribing to HK request, RC = 0x%08lX\n", (unsigned long)status);
+        return status;
+    }
+    else
+    {
+        OS_printf("SUBSCRIBED TO WAKEUP MID (0x%07X)\n\n\n\n\n", TST_CSMR_WAKEUP_CMD_MID);
+    }
+
     (void)TST_CSMR_APP_SubscribeTstMids();
 
     /*
@@ -214,11 +246,26 @@ int32 TST_CSMR_APP_Init(void)
     return CFE_SUCCESS;
 }
 
+void TST_CSMR_APP_SendTestCmd(void)
+{
+    TST_CSMR_APP_Data.totMsgCount++;
+    OS_printf("[CSMR] Received (%d)\n", TST_CSMR_APP_Data.totMsgCount);
+    CFE_MSG_Init(CFE_MSG_PTR(TST_CSMR_APP_Data.TestMsg.CmdHeader), CFE_SB_ValueToMsgId(TST_TRAFFIC_0002_MID),
+                    sizeof(TST_CSMR_APP_Data.TestMsg));
+    // CFE_MSG_SetFcnCode(CFE_MSG_PTR(TST_CSMR_APP_Data.TestMsg.CmdHeader), 5);
+    CFE_SB_TimeStampMsg(CFE_MSG_PTR(TST_CSMR_APP_Data.TestMsg.CmdHeader));
+    CFE_SB_TransmitMsg(CFE_MSG_PTR(TST_CSMR_APP_Data.TestMsg.CmdHeader), true);
+    OS_printf("[CSMR] Sent (%d)\n", TST_CSMR_APP_Data.totMsgCount);
+    // CFE_EVS_SendEvent(TST_CSMR_APP_SENT_COMPLETE_INF_EID, CFE_EVS_EventType_INFORMATION, "Sending test complete");
+}
+
 void TST_CSMR_APP_SendCompleteCmd(void)
 {
-    CFE_MSG_Init(CFE_MSG_PTR(TST_CSMR_APP_Data.TestMsg.CmdHeader), CFE_SB_ValueToMsgId(TST_PROD_APP_CMD_MID),
+    TST_CSMR_APP_Data.totMsgCount++;
+    OS_printf("[CSMR] Completing test (%d)\n", TST_CSMR_APP_Data.totMsgCount);
+    CFE_MSG_Init(CFE_MSG_PTR(TST_CSMR_APP_Data.TestMsg.CmdHeader), CFE_SB_ValueToMsgId(TST_TRAFFIC_0003_MID),
                     sizeof(TST_CSMR_APP_Data.TestMsg));
-    CFE_MSG_SetFcnCode(CFE_MSG_PTR(TST_CSMR_APP_Data.TestMsg.CmdHeader), 4);
+    // CFE_MSG_SetFcnCode(CFE_MSG_PTR(TST_CSMR_APP_Data.TestMsg.CmdHeader), 4);
     CFE_SB_TimeStampMsg(CFE_MSG_PTR(TST_CSMR_APP_Data.TestMsg.CmdHeader));
     CFE_SB_TransmitMsg(CFE_MSG_PTR(TST_CSMR_APP_Data.TestMsg.CmdHeader), true);
     CFE_EVS_SendEvent(TST_CSMR_APP_SENT_COMPLETE_INF_EID, CFE_EVS_EventType_INFORMATION, "Sending test complete");
@@ -231,9 +278,12 @@ void TST_CSMR_APP_ProcessTestMID(TST_PROD_APP_TestMsg_t *Msg)
     switch(Msg->Payload)
     {
         case TST_START_MSG:
-            TST_CSMR_APP_Data.TestInProgress = 1;
-            break;
+            TST_CSMR_APP_Data.TestInProgress = 0;
+            TST_CSMR_APP_Data.totMsgCount = 0;
+            OS_printf("[CSMR] Starting test (%d)\n", TST_CSMR_APP_Data.totMsgCount);
+            // break;
         case TST_MIDDLE_MSG:
+            TST_CSMR_APP_SendTestCmd();
             break;
         case TST_END_MSG:
             TST_CSMR_APP_SendCompleteCmd();

@@ -33,7 +33,8 @@
 #define TST_PROD_APP_PROCESS_CC         2
 #define TST_PROD_APP_START_TEST_CC      3
 #define TST_PROD_APP_COMPLETE_TEST_CC   4
-#define TST_PROD_APP_CHANGE_NUM_MSGS_CC 5
+#define TST_PROD_APP_TST_MSG_CC         5
+#define TST_PROD_APP_CHANGE_NUM_MSGS_CC 6
 
 /*************************************************************************/
 
@@ -60,6 +61,11 @@ typedef struct
     uint8 Payload;
 } TST_PROD_APP_TestMsg_t;
 
+typedef struct
+{
+    CFE_MSG_CommandHeader_t CmdHeader;
+} TST_PROD_APP_WakeupMsg_t;
+
 /*
 ** The following commands all share the "NoArgs" format
 **
@@ -72,6 +78,7 @@ typedef TST_PROD_APP_NoArgsCmd_t TST_PROD_APP_ResetCountersCmd_t;
 typedef TST_PROD_APP_NoArgsCmd_t TST_PROD_APP_ProcessCmd_t;
 typedef TST_PROD_APP_NoArgsCmd_t TST_PROD_APP_StartCmd_t;
 typedef TST_PROD_APP_NoArgsCmd_t TST_PROD_APP_CompleteCmd_t;
+typedef TST_PROD_APP_NoArgsCmd_t TST_PROD_APP_TestCmd_t;
 
 /*************************************************************************/
 /*
